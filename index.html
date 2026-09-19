@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Catalina Wine Mixer — Pool Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#E3E8ED; --sunk:#E7EBEF;
+  --line:#CFD7DF; --line-soft:#DDE3E9;
+  --text:#16263D; --dim:#5C6B7E; --faint:#8494A5;
+  --accent:#C8481E;
+  --good:#14795B; --good-bg:#D9EFE5;
+  --bad:#B3342B;  --bad-bg:#F6DEDB;
+  --warn:#9A6A10; --warn-bg:#F5E8CC;
+  --shadow:0 1px 2px rgba(22,38,61,.08), 0 6px 18px rgba(22,38,61,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E141B; --surface:#151E27; --surface-2:#1D2833; --sunk:#111922;
+    --line:#2A3744; --line-soft:#212C37;
+    --text:#E4EAF0; --dim:#8798A8; --faint:#65778A;
+    --accent:#F2703F;
+    --good:#3CC08B; --good-bg:#12332A;
+    --bad:#E86A5C;  --bad-bg:#37201E;
+    --warn:#D9A33C; --warn-bg:#332814;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E141B; --surface:#151E27; --surface-2:#1D2833; --sunk:#111922;
+  --line:#2A3744; --line-soft:#212C37;
+  --text:#E4EAF0; --dim:#8798A8; --faint:#65778A;
+  --accent:#F2703F;
+  --good:#3CC08B; --good-bg:#12332A;
+  --bad:#E86A5C;  --bad-bg:#37201E;
+  --warn:#D9A33C; --warn-bg:#332814;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding-inline:16px; padding-block:0 56px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:30;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+  margin-inline:-16px; padding:14px 16px 12px;
+  display:flex; flex-wrap:wrap; gap:12px 20px; align-items:flex-end; justify-content:space-between;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  display:block; margin-bottom:3px;
+}
+h1{
+  font-family:"Saira Condensed",Impact,sans-serif; font-weight:700;
+  font-size:clamp(26px,5vw,38px); line-height:1; letter-spacing:.01em;
+  margin:0; text-wrap:balance;
+}
+.week{display:block; margin-top:5px; color:var(--dim); font-size:12.5px; font-weight:500}
+.week b{color:var(--text); font-weight:600}
+.ctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.pulse{
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--dim);
+  background:var(--surface); border:1px solid var(--line-soft);
+  padding:6px 10px; border-radius:999px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:none}
+.dot.stale{background:var(--warn)}
+.dot.err{background:var(--bad)}
+@media (prefers-reduced-motion:no-preference){
+  .dot.beat{animation:beat 2.4s ease-in-out infinite}
+  @keyframes beat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+}
+button{font:inherit; color:inherit; cursor:pointer}
+.btn{
+  background:var(--surface); border:1px solid var(--line);
+  padding:6px 12px; border-radius:7px; font-size:12px; font-weight:500;
+}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ---------- tiles ---------- */
+.tiles{
+  display:grid; gap:10px; margin-top:20px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+}
+.tile{
+  background:var(--surface); border:1px solid var(--line-soft);
+  border-radius:10px; padding:13px 15px 12px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:2px;
+}
+.tile .k{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--faint);
+}
+.tile .v{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:34px;
+  line-height:1.05; font-variant-numeric:tabular-nums;
+}
+.tile .v small{font-size:17px; color:var(--dim); font-weight:600; margin-left:3px}
+.tile .s{font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
+.tile.hero{border-color:var(--accent)}
+.tile.hero .v{color:var(--accent)}
+
+/* ---------- section heads ---------- */
+.sec{margin-top:30px}
+.sechead{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  padding-bottom:8px; border-bottom:2px solid var(--text);
+}
+h2{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; letter-spacing:.03em;
+  text-transform:uppercase; font-size:16px; margin:0;
+}
+.sechead .note{font-size:11.5px; color:var(--dim); font-family:"IBM Plex Mono",monospace}
+.seg{display:inline-flex; background:var(--sunk); border:1px solid var(--line-soft); border-radius:8px; padding:2px; gap:2px}
+.seg button{
+  border:0; background:transparent; padding:5px 11px; border-radius:6px;
+  font-size:11.5px; font-weight:500; color:var(--dim);
+}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--text); box-shadow:var(--shadow)}
+
+/* ---------- pool standings ---------- */
+.lockbar{
+  display:flex; align-items:center; gap:9px; margin-top:10px;
+  background:var(--warn-bg); border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  border-radius:8px; padding:8px 12px; font-size:12px; color:var(--warn);
+}
+.lockbar b{font-weight:600}
+.pool{margin-top:10px; display:flex; flex-direction:column; gap:3px}
+.prow{
+  display:grid; grid-template-columns:46px 1fr 54px 168px; gap:10px; align-items:center;
+  padding:8px 13px 8px 11px; border-radius:8px;
+  background:var(--surface); border:1px solid var(--line-soft);
+  position:relative;
+}
+.prow.head{
+  background:transparent; border:0; padding-top:2px; padding-bottom:4px;
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--faint);
+}
+.prow.me{border-color:var(--accent); background:var(--surface)}
+.prow.me::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--accent); border-radius:8px 0 0 8px;
+}
+.prow .rk{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--dim);
+  font-variant-numeric:tabular-nums;
+}
+.prow.me .rk{color:var(--accent); font-weight:600}
+.prow .who{
+  font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;
+}
+.prow.me .who{font-weight:600}
+.prow .who .you{
+  font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.1em;
+  color:var(--accent); margin-left:6px; text-transform:uppercase;
+}
+.prow .pts{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:20px;
+  text-align:right; font-variant-numeric:tabular-nums;
+}
+.prow .det{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--faint);
+  text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.prow .det .up{color:var(--good)}
+.prow.head .pts,.prow.head .det{font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:400}
+.morebtn{align-self:flex-start; margin-top:4px}
+
+/* ---------- column header ---------- */
+.colhead{
+  display:grid; grid-template-columns:78px 1fr 172px 96px; gap:12px;
+  padding:9px 14px 7px; font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--faint);
+}
+.colhead .r{text-align:right}
+
+/* ---------- game rows ---------- */
+.rows{display:flex; flex-direction:column; gap:6px}
+.row{
+  position:relative; display:grid; gap:12px;
+  grid-template-columns:78px 1fr 172px 96px; align-items:center;
+  background:var(--surface); border:1px solid var(--line-soft);
+  border-radius:10px; padding:11px 14px 11px 17px; box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.row::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--line);
+}
+.row.cov::before{background:var(--good)}
+.row.nocov::before{background:var(--bad)}
+.row.push::before{background:var(--warn)}
+.row.done{opacity:.82}
+
+.status{font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.35; color:var(--dim)}
+.status .q{color:var(--text); font-weight:600}
+.status .fin{letter-spacing:.06em; color:var(--faint)}
+.status .lv{color:var(--accent); font-weight:600}
+
+/* matchup */
+.teams{display:flex; flex-direction:column; gap:3px; min-width:0; max-width:340px}
+.tm{display:flex; align-items:center; gap:8px; min-width:0}
+.tm img{width:19px; height:19px; object-fit:contain; flex:none; max-width:100%}
+.tm .nm{
+  font-family:"Saira Condensed",sans-serif; font-weight:600; font-size:17px;
+  letter-spacing:.02em; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.tm .sc{
+  margin-left:auto; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:15px;
+  font-variant-numeric:tabular-nums; color:var(--dim); flex:none; padding-left:10px;
+}
+.tm.mine .nm{color:var(--text)}
+.tm.mine .sc{color:var(--text)}
+.tm.mine .nm::after{
+  content:""; display:block; height:2px; background:var(--accent);
+  margin-top:1px; border-radius:1px;
+}
+.tm .poss{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+.sit{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--faint);
+  margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.sit .rz{color:var(--bad); font-weight:600}
+
+/* pick */
+.pick{display:flex; flex-direction:column; gap:3px; align-items:flex-start}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface-2); border:1px solid var(--line-soft);
+  border-radius:6px; padding:3px 8px;
+}
+.chip .t{font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em}
+.chip .ln{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
+.chip.best{border-color:var(--accent); background:var(--surface)}
+.star{color:var(--accent); font-size:11px; line-height:1}
+.bplabel{font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.12em; color:var(--accent); text-transform:uppercase}
+.consensus{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--faint);
+  display:flex; align-items:center; gap:5px;
+}
+.cbar{
+  width:38px; height:3px; border-radius:2px; background:var(--surface-2);
+  overflow:hidden; flex:none;
+}
+.cbar i{display:block; height:100%; background:var(--dim)}
+.consensus.alone i{background:var(--accent)}
+.consensus.alone{color:var(--accent)}
+
+/* cushion */
+.cush{text-align:right; font-variant-numeric:tabular-nums}
+.cush .n{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:26px; line-height:1;
+  color:var(--faint); display:block;
+}
+.cush.cov .n{color:var(--good)}
+.cush.nocov .n{color:var(--bad)}
+.cush.push .n{color:var(--warn)}
+.cush .l{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--faint); display:block; margin-top:2px;
+}
+.verdict{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.1em; padding:2px 7px; border-radius:4px; font-weight:600;
+}
+.verdict.w{background:var(--good-bg); color:var(--good)}
+.verdict.l{background:var(--bad-bg); color:var(--bad)}
+.verdict.p{background:var(--warn-bg); color:var(--warn)}
+
+.empty{
+  padding:22px 14px; text-align:center; color:var(--faint); font-size:12.5px;
+  border:1px dashed var(--line); border-radius:10px;
+}
+.nomatch{font-size:11px; color:var(--warn); font-family:"IBM Plex Mono",monospace}
+
+footer{
+  margin-top:34px; padding-top:14px; border-top:1px solid var(--line-soft);
+  font-size:11.5px; color:var(--faint); line-height:1.6;
+}
+footer code{font-family:"IBM Plex Mono",monospace; color:var(--dim)}
+footer b{color:var(--dim)}
+
+@media (max-width:760px){
+  .colhead{display:none}
+  .row{grid-template-columns:1fr auto; grid-template-areas:"st cu" "tm cu" "pk cu"; gap:8px 12px; padding:12px 13px 12px 16px}
+  .status{grid-area:st}
+  .teams{grid-area:tm}
+  .pick{grid-area:pk}
+  .cush{grid-area:cu; align-self:center}
+  .prow{grid-template-columns:40px 1fr 48px; row-gap:2px}
+  .prow .det{grid-column:2 / -1; text-align:left}
+  .prow.head .det{display:none}
+}
+
+
+/* ---- pool-board additions ---- */
+.picker{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--line-soft); border-radius:10px;
+  padding:11px 14px; margin-top:16px; box-shadow:var(--shadow);
+}
+.picker label{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--faint);
+}
+.picker select{
+  font:inherit; font-weight:600; color:var(--text); background:var(--sunk);
+  border:1px solid var(--line); border-radius:7px; padding:7px 10px; min-width:200px; max-width:100%;
+}
+.picker select:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.picker .hint{font-size:11.5px; color:var(--dim)}
+.locked{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--faint);
+  display:inline-flex; align-items:center; gap:5px;
+}
+.neutralline{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--dim);
+  font-variant-numeric:tabular-nums;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="topbar">
+  <div>
+    <span class="eyebrow">Splash Sports · Pick'em against the spread</span>
+    <h1>Catalina Wine Mixer</h1>
+    <span class="week"><b id="weeklabel"></b> · 31 games · the whole pool</span>
+  </div>
+  <div class="ctl">
+    <span class="pulse"><span class="dot beat" id="dot"></span><span id="updated">starting…</span></span>
+    <button class="btn" id="refresh" type="button">Refresh</button>
+    <button class="btn" id="theme" type="button">Theme</button>
+  </div>
+</header>
+
+<div class="picker">
+  <label for="whoami">Your entry</label>
+  <select id="whoami"></select>
+  <span class="hint" id="pickerhint"></span>
+</div>
+
+<section class="tiles" id="tiles"></section>
+
+<section class="sec">
+  <div class="sechead">
+    <h2>The pool</h2>
+    <span class="note" id="poolnote"></span>
+    <div class="seg" style="margin-left:auto" id="poolseg">
+      <button type="button" data-p="week" aria-pressed="true">This week, live</button>
+      <button type="button" data-p="season" aria-pressed="false">Season</button>
+    </div>
+  </div>
+  <div id="lockbar"></div>
+  <div class="pool" id="pool"></div>
+  <button class="btn morebtn" id="poolmore" type="button">Show all</button>
+</section>
+
+<section class="sec">
+  <div class="sechead">
+    <h2>The slate</h2>
+    <span class="note" id="slatenote"></span>
+    <div class="seg" style="margin-left:auto" id="filter">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="live" aria-pressed="false">Live</button>
+      <button type="button" data-f="soon" aria-pressed="false">Upcoming</button>
+      <button type="button" data-f="done" aria-pressed="false">Final</button>
+    </div>
+  </div>
+  <div class="colhead">
+    <span>Status</span><span>Matchup</span><span id="pickcol">Pick</span><span class="r">Cushion</span>
+  </div>
+  <div class="rows" id="rows"></div>
+</section>
+
+<footer>
+  Scores come straight from the public ESPN scoreboard feeds and refresh every 30 seconds while this tab is open.
+  Spreads are the lines locked on Splash when picks were made, not today's market number.
+  <b>Cushion</b> is the live margin against that line: <code>(picked team − opponent) + line</code>. Positive means that pick is covering right now.
+  Scoring follows the pool: 1 point per correct pick, plus 2 bonus for a correct Best Pick, so a starred win is worth 3.
+  <br><b>Nothing here is a leak.</b> Splash reveals every entrant's pick the moment that game kicks off, and this
+  page carries only those. Picks for games that have not started are withheld from this file entirely — they are
+  not hidden in the page, they were never written into it. Pick data was last refreshed <b id="scraped"></b>;
+  anything that kicked off after that shows as locked until the next refresh.
+</footer>
+
+</div>
+
+<script>
+const WEEK = {"label":"NFL Week 2 · CFB Week 3","scraped":"Sep 18, 9:40pm"};
+const GAMES = [{"lg":"nfl","away":"DET","home":"BUF","hline":-4.5},{"lg":"cfb","away":"MIA","home":"WAKE","hline":20.5},{"lg":"cfb","away":"HOU","home":"TTU","hline":-7.5},{"lg":"cfb","away":"UGA","home":"ARK","hline":25.5},{"lg":"cfb","away":"UNC","home":"CLEM","hline":-3.5},{"lg":"cfb","away":"FSU","home":"ALA","hline":-19.5},{"lg":"cfb","away":"UK","home":"TA&M","sh":"TXAM","hline":-16.5},{"lg":"cfb","away":"SMU","home":"LOU","hline":-2.5},{"lg":"cfb","away":"STAN","home":"DUKE","hline":-9.5},{"lg":"cfb","away":"MSST","home":"SC","sh":"SCAR","hline":-3.5},{"lg":"cfb","away":"FLA","home":"AUB","hline":2.5},{"lg":"cfb","away":"LSU","home":"MISS","hline":2.5},{"lg":"cfb","away":"COLO","home":"NU","sh":"NW","hline":-3.5},{"lg":"cfb","away":"MSU","home":"ND","hline":-29.5},{"lg":"cfb","away":"UTSA","home":"TEX","hline":-30.5},{"lg":"cfb","away":"PUR","home":"UCLA","hline":-14.5},{"lg":"nfl","away":"CLE","home":"TB","hline":-8.5},{"lg":"nfl","away":"NO","home":"BAL","hline":-8.5},{"lg":"nfl","away":"GB","home":"NYJ","hline":3.5},{"lg":"nfl","away":"CAR","home":"ATL","hline":2.5},{"lg":"nfl","away":"MIN","home":"CHI","hline":-5.5},{"lg":"nfl","away":"PIT","home":"NE","hline":-4.5},{"lg":"nfl","away":"PHI","home":"TEN","hline":6.5},{"lg":"nfl","away":"CIN","home":"HOU","hline":-2.5},{"lg":"nfl","away":"JAX","home":"DEN","sa":"JAC","hline":-2.5},{"lg":"nfl","away":"LV","home":"LAC","hline":-7.5},{"lg":"nfl","away":"WSH","home":"DAL","sa":"WAS","hline":-3.5},{"lg":"nfl","away":"SEA","home":"ARI","hline":4.5},{"lg":"nfl","away":"MIA","home":"SF","hline":-13.5},{"lg":"nfl","away":"IND","home":"KC","hline":-6.5},{"lg":"nfl","away":"NYG","home":"LAR","sh":"LA","hline":-7.5}];
+const ENTRANTS = [{"name":"PHILLY-SPECIAL-W-WIZ","picks":[{"s":"home","b":true},{"s":"away","b":true},{"s":"home","b":true},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"DIDYOUTOUCHMYDRUMSET","picks":[{"s":"home","b":false},{"s":"home","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"JEFFNOACK77","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"John-Curry","picks":[{"s":"home","b":false},{"s":"home","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"COSMO50","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"JMPOGLITSCH","picks":[{"s":"home","b":false},{"s":"home","b":false},{"s":"home","b":true},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"BSHEA2020","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"VASQUIRES","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"RayDaze","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"SctanleysPonderosa","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"BRIANDRESSER","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"XOXOGOSSIPGIRL","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":true},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"blkcasper","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"micahwiener","picks":[{"s":"home","b":false},{"s":"home","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"blegg","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"home","b":true},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"LDE0731","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"SHOTGUN13","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"Cubano12","picks":[{"s":"home","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"MATEOG5","picks":[{"s":"away","b":false},{"s":"away","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"cLegg-765","picks":[{"s":"away","b":false},{"s":"away","b":true},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"BKEE","picks":[{"s":"away","b":false},{"s":"home","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"JTINEZ15","picks":[{"s":"away","b":false},{"s":"home","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"BIGSLIM40-494","picks":[{"s":"away","b":false},{"s":"away","b":false},{"s":"away","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"HAIDEBEZ1","picks":[{"s":"away","b":false},{"s":"home","b":false},{"s":"home","b":false},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"name":"BananaBailey","picks":[{"s":"away","b":false},{"s":"away","b":false},{"s":"home","b":true},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}];
+const SEASON = [["1","BRIANDRESSER",24,"20-13",2,6],["2","blkcasper",22,"18-15",2,0],["3","RayDaze",21,"19-14",1,1],["4","BSHEA2020",21,"19-14",1,4],["5","BKEE",21,"19-14",1,7],["6","XOXOGOSSIPGIRL",21,"17-16",2,4],["7","JMPOGLITSCH",21,"17-16",2,6],["8","PHILLY-SPECIAL-W-WIZ",20,"18-15",1,1],["9","micahwiener",20,"16-17",2,11],["10","VASQUIRES",19,"19-14",0,1],["T11","blegg",19,"17-16",1,1],["T11","BananaBailey",19,"17-16",1,1],["T13","cLegg-765",18,"16-17",1,4],["T13","SctanleysPonderosa",18,"16-17",1,4],["15","LDE0731",18,"16-17",1,15],["16","SHOTGUN13",17,"17-16",0,6],["T17","JTINEZ15",17,"15-18",1,0],["T17","HAIDEBEZ1",17,"15-18",1,0],["19","COSMO50",17,"15-18",1,3],["20","Cubano12",16,"16-17",0,24],["21","DIDYOUTOUCHMYDRUMSET",16,"14-19",1,3],["22","BIGSLIM40-494",16,"14-19",1,7],["23","JEFFNOACK77",15,"15-18",0,1],["24","MATEOG5",15,"13-20",1,5],["25","John-Curry",14,"12-21",1,7]];
+
+
+const FEEDS = {
+  nfl: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+  cfb: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400"
+};
+
+const $ = s => document.querySelector(s);
+const games = new Map();
+let filter = "all", poolView = "week", poolAll = false, viewer = null;
+let lastOk = 0, lastErr = null;
+
+const key = (lg,a,h) => lg + ":" + a + "@" + h;
+const sign = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n);
+const label = (g, side) => side === "home" ? (g.sh || g.home) : (g.sa || g.away);
+const lineFor = (g, side) => side === "home" ? g.hline : -g.hline;
+
+function normalize(lg, ev){
+  const c = ev.competitions && ev.competitions[0];
+  if(!c) return null;
+  const away = c.competitors.find(x => x.homeAway === "away");
+  const home = c.competitors.find(x => x.homeAway === "home");
+  if(!away || !home) return null;
+  const st = ev.status || {}, ty = st.type || {}, sit = c.situation || {};
+  return {
+    lg, away: away.team.abbreviation, home: home.team.abbreviation,
+    awayLogo: away.team.logo, homeLogo: home.team.logo,
+    awayScore: away.score == null ? null : Number(away.score),
+    homeScore: home.score == null ? null : Number(home.score),
+    state: ty.state, period: st.period || 0, clock: st.displayClock || "",
+    name: ty.name || "", start: ev.date,
+    possession: sit.possession || null, awayId: away.id, homeId: home.id,
+    downDistance: sit.downDistanceText || "", redZone: !!sit.isRedZone
+  };
+}
+
+async function pull(){
+  try{
+    const res = await Promise.all(Object.entries(FEEDS).map(async ([lg,url]) => {
+      const r = await fetch(url, {cache:"no-store"});
+      if(!r.ok) throw new Error(lg + " " + r.status);
+      return [lg, await r.json()];
+    }));
+    for(const [lg, data] of res)
+      for(const ev of (data.events || [])){
+        const g = normalize(lg, ev);
+        if(g) games.set(key(lg, g.away, g.home), g);
+      }
+    lastOk = Date.now(); lastErr = null;
+  }catch(err){ lastErr = err.message || String(err); }
+  render();
+}
+
+function feedFor(i){ const g = GAMES[i]; return games.get(key(g.lg, g.away, g.home)); }
+
+function cushionFor(i, side){
+  const g = GAMES[i], f = feedFor(i);
+  if(!f || f.state === "pre" || f.awayScore == null || f.homeScore == null) return null;
+  const ps = side === "home" ? f.homeScore : f.awayScore;
+  const os = side === "home" ? f.awayScore : f.homeScore;
+  return {c:(ps - os) + lineFor(g, side), state:f.state};
+}
+
+function scoreEntry(e){
+  let pts = 0, w = 0, l = 0, livecov = 0, hidden = 0;
+  e.picks.forEach((p, i) => {
+    if(!p){ hidden++; return; }
+    const r = cushionFor(i, p.s);
+    if(!r){ hidden++; return; }
+    if(r.state === "post"){
+      if(r.c > 0){ w++; pts += 1 + (p.b ? 2 : 0); } else if(r.c < 0){ l++; }
+    }else if(r.c > 0){ livecov += 1 + (p.b ? 2 : 0); }
+  });
+  return {pts, w, l, livecov, hidden, proj: pts + livecov};
+}
+
+function poolWeek(){
+  const rows = ENTRANTS.map(e => ({name: e.name, ...scoreEntry(e)}))
+    .sort((a,b) => b.proj - a.proj || b.pts - a.pts || a.name.localeCompare(b.name));
+  return rows.map(r => {
+    const first = rows.findIndex(x => x.proj === r.proj && x.pts === r.pts);
+    const tied = rows.filter(x => x.proj === r.proj && x.pts === r.pts).length > 1;
+    return {...r, rank: (tied ? "T" : "") + (first + 1)};
+  });
+}
+
+/* ---- pool table ---- */
+function renderPool(){
+  const box = $("#pool"), lock = $("#lockbar");
+  let rows, list;
+
+  if(poolView === "week"){
+    rows = poolWeek();
+    const mine = viewer ? rows.find(r => r.name === viewer) : null;
+    const started = GAMES.filter((g,i) => { const f = feedFor(i); return f && f.state !== "pre"; }).length;
+    const carried = GAMES.length - (rows.length ? Math.min(...rows.map(r => r.hidden)) : 0);
+    $("#poolnote").textContent = mine ? "you sit " + mine.rank + " of " + rows.length + " this week" : rows.length + " entries";
+    lock.innerHTML = '<div class="lockbar">🔒 <span><b>' + started + ' of ' + GAMES.length
+      + '</b> games have kicked off, and this page carries picks for <b>' + carried + '</b> of them. '
+      + 'Splash keeps every pick hidden until its game starts, so the rest are not in this file at all.</span></div>';
+    list = poolAll ? rows : rows.slice(0, 8);
+    if(!poolAll && viewer && !list.some(r => r.name === viewer) && mine) list = list.concat([mine]);
+    box.innerHTML = '<div class="prow head"><span>Rank</span><span>Entrant</span>'
+      + '<span class="pts">Live</span><span class="det">Graded · live · locked</span></div>'
+      + list.map(r => {
+        const me = r.name === viewer;
+        return '<div class="prow' + (me ? " me" : "") + '">'
+          + '<span class="rk">' + r.rank + '</span>'
+          + '<span class="who">' + esc(r.name) + (me ? '<span class="you">you</span>' : '') + '</span>'
+          + '<span class="pts">' + r.proj + '</span>'
+          + '<span class="det">' + r.w + "-" + r.l
+            + (r.livecov ? ' · <span class="up">+' + r.livecov + " live</span>" : "")
+            + (r.hidden ? " · " + r.hidden + " locked" : "") + '</span></div>';
+      }).join("");
+  }else{
+    rows = SEASON;
+    const mine = viewer ? rows.find(r => r[1] === viewer) : null;
+    $("#poolnote").textContent = mine ? "you sit " + mine[0] + " of " + rows.length + " on the season" : rows.length + " entries";
+    lock.innerHTML = '<div class="lockbar">📋 <span>Splash season table as of <b>' + esc(WEEK.scraped)
+      + '</b>. Frozen — this week\'s results are not in it yet.</span></div>';
+    list = poolAll ? rows : rows.slice(0, 8);
+    if(!poolAll && viewer && !list.some(r => r[1] === viewer) && mine) list = list.concat([mine]);
+    box.innerHTML = '<div class="prow head"><span>Rank</span><span>Entrant</span>'
+      + '<span class="pts">Pts</span><span class="det">W-L · best picks · tie diff</span></div>'
+      + list.map(r => {
+        const me = r[1] === viewer;
+        return '<div class="prow' + (me ? " me" : "") + '">'
+          + '<span class="rk">' + r[0] + '</span>'
+          + '<span class="who">' + esc(r[1]) + (me ? '<span class="you">you</span>' : '') + '</span>'
+          + '<span class="pts">' + r[2] + '</span>'
+          + '<span class="det">' + r[3] + " · " + r[4] + " BPW · TD " + r[5] + '</span></div>';
+      }).join("");
+  }
+  $("#poolmore").textContent = poolAll ? "Show top 8" : "Show all " + rows.length;
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---- slate ---- */
+function statusHTML(f){
+  if(!f) return '<span class="fin">NO FEED</span>';
+  if(f.state === "pre"){
+    const d = new Date(f.start);
+    return d.toLocaleDateString(undefined,{weekday:"short"}) + "<br>"
+      + d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  }
+  if(f.state === "post") return '<span class="fin">FINAL' + (f.period > 4 ? " / OT" : "") + '</span>';
+  if(f.name === "STATUS_HALFTIME") return '<span class="lv">HALF</span>';
+  if(f.name === "STATUS_END_PERIOD") return '<span class="lv">END Q' + f.period + '</span>';
+  return '<span class="lv">' + (f.period > 4 ? "OT" : "Q" + f.period) + '</span><br><span class="q">' + f.clock + '</span>';
+}
+
+function teamHTML(i, side, mySide){
+  const g = GAMES[i], f = feedFor(i);
+  const logo = side === "away" ? (f && f.awayLogo) : (f && f.homeLogo);
+  const sc = side === "away" ? (f && f.awayScore) : (f && f.homeScore);
+  const id = side === "away" ? (f && f.awayId) : (f && f.homeId);
+  const ball = f && f.state === "in" && f.possession && id && f.possession === id;
+  return '<div class="tm' + (mySide === side ? " mine" : "") + '">'
+    + (logo ? '<img src="' + logo + '" alt="" loading="lazy">' : '<span style="width:19px"></span>')
+    + '<span class="nm">' + esc(label(g, side)) + '</span>'
+    + (ball ? '<span class="poss" title="has possession"></span>' : '')
+    + '<span class="sc">' + (sc == null || (f && f.state === "pre") ? "–" : sc) + '</span></div>';
+}
+
+function consensus(i){
+  let home = 0, total = 0;
+  for(const e of ENTRANTS){
+    const p = e.picks[i];
+    if(!p) continue;
+    total++; if(p.s === "home") home++;
+  }
+  return {home, away: total - home, total};
+}
+
+function rowHTML(i){
+  const g = GAMES[i], f = feedFor(i);
+  const mine = viewer ? (ENTRANTS.find(e => e.name === viewer) || {picks:[]}).picks[i] : null;
+  const r = mine ? cushionFor(i, mine.s) : null;
+  const cush = r ? r.c : null;
+
+  let cls = "row";
+  if(mine && f && f.state !== "pre") cls += cush > 0 ? " cov" : cush < 0 ? " nocov" : " push";
+  if(f && f.state === "post") cls += " done";
+
+  let sit = "";
+  if(f && f.state === "in" && (f.downDistance || f.redZone))
+    sit = '<div class="sit">' + (f.redZone ? '<span class="rz">RED ZONE</span> · ' : '') + (f.downDistance || "") + '</div>';
+
+  /* pick cell */
+  let pickCell;
+  if(mine){
+    const line = lineFor(g, mine.s);
+    const cn = consensus(i);
+    const withMe = mine.s === "home" ? cn.home : cn.away;
+    const pct = cn.total ? Math.round(withMe / cn.total * 100) : 0;
+    pickCell = (mine.b ? '<span class="bplabel">Best pick</span>' : '')
+      + '<span class="chip' + (mine.b ? " best" : "") + '">'
+      + (mine.b ? '<span class="star">★</span>' : '')
+      + '<span class="t">' + esc(label(g, mine.s)) + '</span>'
+      + '<span class="ln">' + sign(line) + '</span></span>'
+      + '<span class="consensus' + (pct <= 34 ? " alone" : "") + '">'
+      + '<span class="cbar"><i style="width:' + pct + '%"></i></span>'
+      + withMe + "/" + cn.total + " of the pool</span>";
+  }else if(viewer){
+    pickCell = '<span class="locked">🔒 locked until kickoff</span>'
+      + '<span class="neutralline">' + esc(label(g,"home")) + " " + sign(g.hline) + '</span>';
+  }else{
+    const cn = consensus(i);
+    pickCell = '<span class="neutralline">' + esc(label(g,"home")) + " " + sign(g.hline) + '</span>'
+      + (cn.total ? '<span class="consensus"><span class="cbar"><i style="width:'
+        + Math.round(cn.home / cn.total * 100) + '%"></i></span>' + cn.home + " on " + esc(label(g,"home")) + '</span>'
+        : '<span class="locked">picks locked</span>');
+  }
+
+  /* cushion cell */
+  let cushCell;
+  if(!mine || !f || f.state === "pre"){
+    cushCell = '<div class="cush"><span class="n">' + (mine ? sign(lineFor(g, mine.s)) : sign(g.hline))
+      + '</span><span class="l">the line</span></div>';
+  }else{
+    const c2 = cush > 0 ? "cov" : cush < 0 ? "nocov" : "push";
+    if(f.state === "post"){
+      const v = cush > 0 ? ["w","WIN"] : cush < 0 ? ["l","LOSS"] : ["p","PUSH"];
+      cushCell = '<div class="cush ' + c2 + '"><span class="n">' + sign(cush) + '</span>'
+        + '<span class="l"><span class="verdict ' + v[0] + '">' + v[1] + '</span></span></div>';
+    }else{
+      const lbl = cush > 0 ? "covering" : cush < 0 ? "need " + Math.ceil(Math.abs(cush)) : "on the number";
+      cushCell = '<div class="cush ' + c2 + '"><span class="n">' + sign(cush) + '</span><span class="l">' + lbl + '</span></div>';
+    }
+  }
+
+  return '<article class="' + cls + '">'
+    + '<div class="status">' + statusHTML(f) + '</div>'
+    + '<div class="teams">' + teamHTML(i,"away",mine && mine.s) + teamHTML(i,"home",mine && mine.s) + sit
+      + (f ? "" : '<div class="nomatch">' + esc(g.away) + ' @ ' + esc(g.home) + ' not in feed</div>') + '</div>'
+    + '<div class="pick">' + pickCell + '</div>'
+    + cushCell + '</article>';
+}
+
+function tile(k,v,s,hero){
+  return '<div class="tile' + (hero ? " hero" : "") + '"><span class="k">' + k + '</span>'
+    + '<span class="v">' + v + '</span><span class="s">' + s + '</span></div>';
+}
+
+function tilesHTML(){
+  const wk = poolWeek();
+  const live = GAMES.filter((g,i) => { const f = feedFor(i); return f && f.state === "in"; }).length;
+  const done = GAMES.filter((g,i) => { const f = feedFor(i); return f && f.state === "post"; }).length;
+
+  if(!viewer){
+    const lead = wk[0];
+    return [
+      tile("Games live", String(live), done + " final · " + (GAMES.length - live - done) + " to come", true),
+      tile("Leading", lead ? esc(lead.name.slice(0,14)) : "—", lead ? lead.proj + " points, live" : ""),
+      tile("Entries", String(ENTRANTS.length), "pick an entry above for your own board")
+    ].join("");
+  }
+
+  const e = ENTRANTS.find(x => x.name === viewer);
+  const s = scoreEntry(e);
+  const mine = wk.find(r => r.name === viewer);
+  const seas = SEASON.find(r => r[1] === viewer);
+  const liveCov = e.picks.filter((p,i) => { if(!p) return false; const r = cushionFor(i,p.s); return r && r.state === "in" && r.c > 0; }).length;
+  const liveTot = e.picks.filter((p,i) => { if(!p) return false; const r = cushionFor(i,p.s); return r && r.state === "in"; }).length;
+
+  return [
+    tile("Points", String(s.pts), s.proj > s.pts ? "→ " + s.proj + " if the live ones hold" : "1 per win · +2 per best pick", true),
+    tile("Week rank", mine ? mine.rank : "—", "of " + wk.length + " · live"),
+    tile("Record", s.w + "-" + s.l, s.hidden + " locked or upcoming"),
+    tile("Covering now", liveCov + '<small>/' + liveTot + '</small>', liveTot ? "games in progress" : "nothing on the field"),
+    tile("Season", seas ? seas[0] + '<small>/' + SEASON.length + '</small>' : "—", seas ? seas[2] + " pts · " + seas[3] : "")
+  ].join("");
+}
+
+function render(){
+  $("#weeklabel").textContent = WEEK.label;
+  $("#scraped").textContent = WEEK.scraped;
+  $("#tiles").innerHTML = tilesHTML();
+  $("#pickcol").textContent = viewer ? "Their pick" : "Line / pool";
+  $("#pickerhint").textContent = viewer
+    ? "Showing " + viewer + "'s board. Nothing is stored anywhere but this browser."
+    : "Pick your name to see your own picks, points and rank.";
+  renderPool();
+
+  const idx = GAMES.map((g,i) => i);
+  const live = idx.filter(i => { const f = feedFor(i); return f && f.state === "in"; });
+  const pre  = idx.filter(i => { const f = feedFor(i); return !f || f.state === "pre"; });
+  const post = idx.filter(i => { const f = feedFor(i); return f && f.state === "post"; });
+
+  pre.sort((a,b) => new Date(feedFor(a) ? feedFor(a).start : 0) - new Date(feedFor(b) ? feedFor(b).start : 0));
+  post.sort((a,b) => new Date(feedFor(b).start) - new Date(feedFor(a).start));
+
+  let list = [];
+  if(filter === "all")  list = [...live, ...pre, ...post];
+  if(filter === "live") list = live;
+  if(filter === "soon") list = pre;
+  if(filter === "done") list = post;
+
+  $("#rows").innerHTML = list.length ? list.map(rowHTML).join("") : '<div class="empty">Nothing here yet.</div>';
+  $("#slatenote").textContent = live.length + " live · " + pre.length + " upcoming · " + post.length + " final";
+  stamp();
+}
+
+function stamp(){
+  const dot = $("#dot"), out = $("#updated");
+  if(lastErr){ dot.className = "dot err"; out.textContent = "feed error — retrying"; return; }
+  if(!lastOk){ out.textContent = "loading…"; return; }
+  const secs = Math.round((Date.now() - lastOk) / 1000);
+  dot.className = "dot beat" + (secs > 90 ? " stale" : "");
+  out.textContent = secs < 5 ? "just now" : secs < 60 ? secs + "s ago" : Math.floor(secs / 60) + "m ago";
+}
+
+/* ---- controls ---- */
+const sel = $("#whoami");
+sel.innerHTML = '<option value="">— whole pool —</option>'
+  + ENTRANTS.map(e => e.name).sort((a,b) => a.localeCompare(b))
+      .map(n => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join("");
+try{
+  const saved = localStorage.getItem("pool-viewer");
+  if(saved && ENTRANTS.some(e => e.name === saved)){ viewer = saved; sel.value = saved; }
+}catch(e){}
+sel.addEventListener("change", () => {
+  viewer = sel.value || null;
+  try{ viewer ? localStorage.setItem("pool-viewer", viewer) : localStorage.removeItem("pool-viewer"); }catch(e){}
+  poolAll = false; render();
+});
+
+$("#filter").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-f]"); if(!b) return;
+  filter = b.dataset.f;
+  [...ev.currentTarget.querySelectorAll("button")].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  render();
+});
+$("#poolseg").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-p]"); if(!b) return;
+  poolView = b.dataset.p; poolAll = false;
+  [...ev.currentTarget.querySelectorAll("button")].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  renderPool();
+});
+$("#poolmore").addEventListener("click", () => { poolAll = !poolAll; renderPool(); });
+$("#refresh").addEventListener("click", pull);
+$("#theme").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const dark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  try{ localStorage.setItem("pickem-theme", dark ? "light" : "dark"); }catch(e){}
+});
+try{
+  const saved = localStorage.getItem("pickem-theme");
+  if(saved) document.documentElement.setAttribute("data-theme", saved);
+}catch(e){}
+
+render();
+pull();
+setInterval(() => { if(!document.hidden) pull(); }, 30000);
+setInterval(stamp, 1000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) pull(); });
+</script>
+</body>
+</html>
