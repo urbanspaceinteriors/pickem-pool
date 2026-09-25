@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-title" content="Pick'em">
+<title>Catalina Wine Mixer — Live Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#E3E8ED; --sunk:#E7EBEF;
+  --line:#CFD7DF; --line-soft:#DDE3E9;
+  --text:#16263D; --dim:#5C6B7E; --faint:#8494A5;
+  --accent:#C8481E;
+  --good:#14795B; --good-bg:#D9EFE5;
+  --bad:#B3342B;  --bad-bg:#F6DEDB;
+  --warn:#9A6A10; --warn-bg:#F5E8CC;
+  --shadow:0 1px 2px rgba(22,38,61,.08), 0 6px 18px rgba(22,38,61,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E141B; --surface:#151E27; --surface-2:#1D2833; --sunk:#111922;
+    --line:#2A3744; --line-soft:#212C37;
+    --text:#E4EAF0; --dim:#8798A8; --faint:#65778A;
+    --accent:#F2703F;
+    --good:#3CC08B; --good-bg:#12332A;
+    --bad:#E86A5C;  --bad-bg:#37201E;
+    --warn:#D9A33C; --warn-bg:#332814;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E141B; --surface:#151E27; --surface-2:#1D2833; --sunk:#111922;
+  --line:#2A3744; --line-soft:#212C37;
+  --text:#E4EAF0; --dim:#8798A8; --faint:#65778A;
+  --accent:#F2703F;
+  --good:#3CC08B; --good-bg:#12332A;
+  --bad:#E86A5C;  --bad-bg:#37201E;
+  --warn:#D9A33C; --warn-bg:#332814;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding-inline:16px; padding-block:0 56px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:30;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+  margin-inline:-16px; padding:14px 16px 12px;
+  display:flex; flex-wrap:wrap; gap:12px 20px; align-items:flex-end; justify-content:space-between;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  display:block; margin-bottom:3px;
+}
+h1{
+  font-family:"Saira Condensed",Impact,sans-serif; font-weight:700;
+  font-size:clamp(26px,5vw,38px); line-height:1; letter-spacing:.01em;
+  margin:0; text-wrap:balance;
+}
+.week{display:block; margin-top:5px; color:var(--dim); font-size:12.5px; font-weight:500}
+.week b{color:var(--text); font-weight:600}
+.ctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.pulse{
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--dim);
+  background:var(--surface); border:1px solid var(--line-soft);
+  padding:6px 10px; border-radius:999px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:none}
+.dot.stale{background:var(--warn)}
+.dot.err{background:var(--bad)}
+@media (prefers-reduced-motion:no-preference){
+  .dot.beat{animation:beat 2.4s ease-in-out infinite}
+  @keyframes beat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+}
+button{font:inherit; color:inherit; cursor:pointer}
+.btn{
+  background:var(--surface); border:1px solid var(--line);
+  padding:6px 12px; border-radius:7px; font-size:12px; font-weight:500;
+}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ---------- tiles ---------- */
+.tiles{
+  display:grid; gap:10px; margin-top:20px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+}
+.tile{
+  background:var(--surface); border:1px solid var(--line-soft);
+  border-radius:10px; padding:13px 15px 12px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:2px;
+}
+.tile .k{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--faint);
+}
+.tile .v{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:34px;
+  line-height:1.05; font-variant-numeric:tabular-nums;
+}
+.tile .v small{font-size:17px; color:var(--dim); font-weight:600; margin-left:3px}
+.tile .s{font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
+.tile.hero{border-color:var(--accent)}
+.tile.hero .v{color:var(--accent)}
+
+/* ---------- section heads ---------- */
+.sec{margin-top:30px}
+.sechead{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  padding-bottom:8px; border-bottom:2px solid var(--text);
+}
+h2{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; letter-spacing:.03em;
+  text-transform:uppercase; font-size:16px; margin:0;
+}
+.sechead .note{font-size:11.5px; color:var(--dim); font-family:"IBM Plex Mono",monospace}
+.seg{display:inline-flex; background:var(--sunk); border:1px solid var(--line-soft); border-radius:8px; padding:2px; gap:2px}
+.seg button{
+  border:0; background:transparent; padding:5px 11px; border-radius:6px;
+  font-size:11.5px; font-weight:500; color:var(--dim);
+}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--text); box-shadow:var(--shadow)}
+
+/* ---------- column header ---------- */
+.colhead{
+  display:grid; grid-template-columns:78px 1fr 172px 96px; gap:12px;
+  padding:9px 14px 7px; font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--faint);
+}
+.colhead .r{text-align:right}
+
+/* ---------- game rows ---------- */
+.rows{display:flex; flex-direction:column; gap:6px}
+.row{
+  position:relative; display:grid; gap:12px;
+  grid-template-columns:78px 1fr 172px 96px; align-items:center;
+  background:var(--surface); border:1px solid var(--line-soft);
+  border-radius:10px; padding:11px 14px 11px 17px; box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.row::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--line);
+}
+.row.cov::before{background:var(--good)}
+.row.nocov::before{background:var(--bad)}
+.row.push::before{background:var(--warn)}
+.row.done{opacity:.82}
+
+.status{font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.35; color:var(--dim)}
+.status .q{color:var(--text); font-weight:600}
+.status .fin{letter-spacing:.06em; color:var(--faint)}
+.status .lv{color:var(--accent); font-weight:600}
+
+/* matchup */
+.teams{display:flex; flex-direction:column; gap:3px; min-width:0; max-width:340px}
+.tm{display:flex; align-items:center; gap:8px; min-width:0}
+.tm img{width:19px; height:19px; object-fit:contain; flex:none; max-width:100%}
+.tm .nm{
+  font-family:"Saira Condensed",sans-serif; font-weight:600; font-size:17px;
+  letter-spacing:.02em; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.tm .sc{
+  margin-left:auto; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:15px;
+  font-variant-numeric:tabular-nums; color:var(--dim); flex:none; padding-left:10px;
+}
+.tm.mine .nm{color:var(--text)}
+.tm.mine .sc{color:var(--text)}
+.tm.mine .nm::after{
+  content:""; display:block; height:2px; background:var(--accent);
+  margin-top:1px; border-radius:1px;
+}
+.tm .poss{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+.sit{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--faint);
+  margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.sit .rz{color:var(--bad); font-weight:600}
+
+/* pick */
+.pick{display:flex; flex-direction:column; gap:3px; align-items:flex-start}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface-2); border:1px solid var(--line-soft);
+  border-radius:6px; padding:3px 8px;
+}
+.chip .t{font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em}
+.chip .ln{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
+.chip.best{border-color:var(--accent); background:var(--surface)}
+.star{color:var(--accent); font-size:11px; line-height:1}
+.bplabel{font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.12em; color:var(--accent); text-transform:uppercase}
+
+/* cushion */
+.cush{text-align:right; font-variant-numeric:tabular-nums}
+.cush .n{
+  font-family:"Saira Condensed",sans-serif; font-weight:700; font-size:26px; line-height:1;
+  color:var(--faint); display:block;
+}
+.cush.cov .n{color:var(--good)}
+.cush.nocov .n{color:var(--bad)}
+.cush.push .n{color:var(--warn)}
+.cush .l{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--faint); display:block; margin-top:2px;
+}
+.verdict{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.1em; padding:2px 7px; border-radius:4px; font-weight:600;
+}
+.verdict.w{background:var(--good-bg); color:var(--good)}
+.verdict.l{background:var(--bad-bg); color:var(--bad)}
+.verdict.p{background:var(--warn-bg); color:var(--warn)}
+
+.empty{
+  padding:22px 14px; text-align:center; color:var(--faint); font-size:12.5px;
+  border:1px dashed var(--line); border-radius:10px;
+}
+.nomatch{font-size:11px; color:var(--warn); font-family:"IBM Plex Mono",monospace}
+
+footer{
+  margin-top:34px; padding-top:14px; border-top:1px solid var(--line-soft);
+  font-size:11.5px; color:var(--faint); line-height:1.6;
+}
+footer code{font-family:"IBM Plex Mono",monospace; color:var(--dim)}
+footer b{color:var(--dim)}
+
+@media (max-width:760px){
+  .colhead{display:none}
+  .row{grid-template-columns:1fr auto; grid-template-areas:"st cu" "tm cu" "pk cu"; gap:8px 12px; padding:12px 13px 12px 16px}
+  .status{grid-area:st}
+  .teams{grid-area:tm}
+  .pick{grid-area:pk}
+  .cush{grid-area:cu; align-self:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="topbar">
+  <div>
+    <span class="eyebrow">Splash Sports · Pick'em against the spread</span>
+    <h1>Catalina Wine Mixer</h1>
+    <span class="week"><b id="weeklabel">NFL Week 2 · CFB Week 3</b> · 31 picks · John-Curry, Entry 1</span>
+  </div>
+  <div class="ctl">
+    <span class="pulse"><span class="dot beat" id="dot"></span><span id="updated">starting…</span></span>
+    <button class="btn" id="refresh" type="button">Refresh</button>
+    <button class="btn" id="theme" type="button">Theme</button>
+  </div>
+</header>
+
+<section class="tiles" id="tiles"></section>
+
+<section class="sec">
+  <div class="sechead">
+    <h2>The slate</h2>
+    <span class="note" id="slatenote"></span>
+    <div class="seg" style="margin-left:auto" id="filter">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="live" aria-pressed="false">Live</button>
+      <button type="button" data-f="soon" aria-pressed="false">Upcoming</button>
+      <button type="button" data-f="done" aria-pressed="false">Final</button>
+    </div>
+  </div>
+  <div class="colhead">
+    <span>Status</span><span>Matchup</span><span>My pick</span><span class="r">Cushion</span>
+  </div>
+  <div class="rows" id="rows"></div>
+</section>
+
+<footer>
+  Scores from the public ESPN scoreboard feeds, refreshed every 30 seconds while this tab is open.
+  Spreads are the lines locked on Splash at pick time, not today's market number.
+  <b>Cushion</b> is your live margin against that line: <code>(your team − opponent) + line</code>. Positive means you are covering right now.
+  Scoring follows the pool: 1 point per correct pick, plus <b>2 bonus</b> for each correct Best Pick (so a starred win is worth 3).
+  <br><b>This board is yours alone.</b> It reads nothing but your own locked picks and the live ESPN
+  feed, so it never needs re-scraping or a login. Open it any time and it is current within 30 seconds.
+  <br>To roll it to a new week, replace the <code>PICKS</code> block in this file once picks lock,
+  and bump <code>nflWeek</code> / <code>cfbWeek</code> in <code>WEEK</code> just above it.
+</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   WEEK DATA — NFL Week 3 / CFB Week 4, entry "John-Curry" #1
+   Picks entered on Splash 2026-09-24. `away`/`home` are ESPN
+   abbreviations so rows bind to the live feed exactly; `sa`/`sh`
+   carry Splash's label for that side where the two disagree.
+   `line` is signed from the perspective of the picked team.
+   ============================================================ */
+const WEEK = {
+  label: "NFL Week 3 · CFB Week 4",
+  year: 2026,
+  seasontype: 2,   // 2 = regular season
+  nflWeek: 3,
+  cfbWeek: 4
+};
+
+const PICKS = [
+  {lg:"nfl", away:"ATL",   home:"GB",    pick:"ATL",   line:+6.5},
+  {lg:"cfb", away:"CLEM",  home:"CAL",   pick:"CAL",   line:+1.5},
+  {lg:"cfb", away:"WAKE",  home:"LOU",   pick:"WAKE",  line:+12.5},
+  {lg:"cfb", away:"TEX",   home:"TENN",  pick:"TENN",  line:+5.5},
+  {lg:"cfb", away:"COLO",  home:"BAY",   pick:"BAY",   line:-9.5},
+  {lg:"cfb", away:"MISS",  home:"FLA",   pick:"MISS",  line:+3.5},
+  {lg:"cfb", away:"IOWA",  home:"MICH",  pick:"IOWA",  line:+5.5, best:true},
+  {lg:"cfb", away:"OU",    home:"UGA",   pick:"OU",    line:+14.5, best:true, sa:"OKLA"},
+  {lg:"cfb", away:"WIS",   home:"PSU",   pick:"PSU",   line:-9.5},
+  {lg:"cfb", away:"OKST",  home:"WVU",   pick:"WVU",   line:-1.5},
+  {lg:"cfb", away:"SC",    home:"ALA",   pick:"SC",    line:+12.5, sa:"SCAR"},
+  {lg:"cfb", away:"ORE",   home:"USC",   pick:"ORE",   line:-2.5},
+  {lg:"cfb", away:"TA&M",  home:"LSU",   pick:"TA&M",  line:+8.5, sa:"TXAM"},
+  {lg:"cfb", away:"MIZ",   home:"MSST",  pick:"MIZ",   line:+5.5, sa:"MIZZ"},
+  {lg:"cfb", away:"GT",    home:"STAN",  pick:"STAN",  line:+3.5},
+  {lg:"cfb", away:"MINN",  home:"WASH",  pick:"WASH",  line:-9.5},
+  {lg:"nfl", away:"SEA",   home:"WSH",   pick:"SEA",   line:-6.5, sh:"WAS"},
+  {lg:"nfl", away:"LAC",   home:"BUF",   pick:"BUF",   line:-7.5},
+  {lg:"nfl", away:"CIN",   home:"PIT",   pick:"PIT",   line:+3.5},
+  {lg:"nfl", away:"NYJ",   home:"DET",   pick:"DET",   line:-6.5},
+  {lg:"nfl", away:"CAR",   home:"CLE",   pick:"CLE",   line:+2.5},
+  {lg:"nfl", away:"TEN",   home:"NYG",   pick:"TEN",   line:+3.5},
+  {lg:"nfl", away:"HOU",   home:"IND",   pick:"IND",   line:+2.5},
+  {lg:"nfl", away:"NE",    home:"JAX",   pick:"NE",    line:+2.5, sh:"JAC"},
+  {lg:"nfl", away:"KC",    home:"MIA",   pick:"MIA",   line:+10.5},
+  {lg:"nfl", away:"ARI",   home:"SF",    pick:"ARI",   line:+8.5},
+  {lg:"nfl", away:"MIN",   home:"TB",    pick:"MIN",   line:-1.5},
+  {lg:"nfl", away:"LV",    home:"NO",    pick:"LV",    line:+3.5},
+  {lg:"nfl", away:"BAL",   home:"DAL",   pick:"BAL",   line:-2.5},
+  {lg:"nfl", away:"LAR",   home:"DEN",   pick:"DEN",   line:+2.5, sa:"LA"},
+  {lg:"nfl", away:"PHI",   home:"CHI",   pick:"PHI",   line:-3.5, best:true}
+];
+
+/* ============================================================ */
+
+/* Feeds are PINNED to this slate's week. The bare scoreboard endpoints return
+   whatever week ESPN considers current, which rolls over on Monday/Tuesday and
+   would silently strip every game off this board. */
+const stamp_ = "year=" + WEEK.year + "&seasontype=" + WEEK.seasontype + "&week=";
+const FEEDS = {
+  nfl: "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?" + stamp_ + WEEK.nflWeek,
+  cfb: "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=400&" + stamp_ + WEEK.cfbWeek
+};
+
+const $ = s => document.querySelector(s);
+const games = new Map();
+let filter = "all";
+let lastOk = 0, lastErr = null;
+
+const key = (lg,a,h) => lg + ":" + a + "@" + h;
+const sign = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n);
+const label = (p, side) => side === "home" ? (p.sh || p.home) : (p.sa || p.away);
+
+function normalize(lg, ev){
+  const c = ev.competitions && ev.competitions[0];
+  if(!c) return null;
+  const away = c.competitors.find(x => x.homeAway === "away");
+  const home = c.competitors.find(x => x.homeAway === "home");
+  if(!away || !home) return null;
+  const st = ev.status || {}, ty = st.type || {}, sit = c.situation || {};
+  return {
+    lg, away: away.team.abbreviation, home: home.team.abbreviation,
+    awayLogo: away.team.logo, homeLogo: home.team.logo,
+    awayScore: away.score == null ? null : Number(away.score),
+    homeScore: home.score == null ? null : Number(home.score),
+    state: ty.state, period: st.period || 0, clock: st.displayClock || "",
+    name: ty.name || "", detail: ty.shortDetail || "", start: ev.date,
+    possession: sit.possession || null, awayId: away.id, homeId: home.id,
+    downDistance: sit.downDistanceText || "", redZone: !!sit.isRedZone
+  };
+}
+
+async function pull(){
+  try{
+    const res = await Promise.all(
+      Object.entries(FEEDS).map(async ([lg,url]) => {
+        const r = await fetch(url, {cache:"no-store"});
+        if(!r.ok) throw new Error(lg + " " + r.status);
+        return [lg, await r.json()];
+      })
+    );
+    for(const [lg, data] of res)
+      for(const ev of (data.events || [])){
+        const g = normalize(lg, ev);
+        if(g) games.set(key(lg, g.away, g.home), g);
+      }
+    lastOk = Date.now(); lastErr = null;
+  }catch(err){ lastErr = err.message || String(err); }
+  render();
+}
+
+/* Cushion for slot i taking `side`. Returns null pre-kickoff / no feed. */
+function cushionFor(i, side){
+  const p = PICKS[i];
+  const g = games.get(key(p.lg, p.away, p.home));
+  if(!g || g.state === "pre" || g.awayScore == null || g.homeScore == null) return null;
+  const mineHome = side === "home";
+  const ps = mineHome ? g.homeScore : g.awayScore;
+  const os = mineHome ? g.awayScore : g.homeScore;
+  // The line John holds belongs to his side; the other side gets its mirror.
+  const myside = p.pick === p.home ? "home" : "away";
+  const line = side === myside ? p.line : -p.line;
+  return {c:(ps - os) + line, state:g.state, line};
+}
+
+function evaluate(p, i){
+  const g = games.get(key(p.lg, p.away, p.home));
+  const side = p.pick === p.home ? "home" : "away";
+  const r = cushionFor(i, side);
+  return {p, i, g, side, state: g ? g.state : "pre", cushion: r ? r.c : null};
+}
+
+/* --- slate rendering --- */
+function statusHTML(g){
+  if(!g) return '<span class="fin">NO FEED</span>';
+  if(g.state === "pre"){
+    const d = new Date(g.start);
+    return d.toLocaleDateString(undefined,{weekday:"short"}) + "<br>"
+      + d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  }
+  if(g.state === "post") return '<span class="fin">FINAL' + (g.period > 4 ? " / OT" : "") + '</span>';
+  if(g.name === "STATUS_HALFTIME") return '<span class="lv">HALF</span>';
+  if(g.name === "STATUS_END_PERIOD") return '<span class="lv">END Q' + g.period + '</span>';
+  return '<span class="lv">' + (g.period > 4 ? "OT" : "Q" + g.period) + '</span><br><span class="q">' + g.clock + '</span>';
+}
+
+function teamHTML(e, side){
+  const g = e.g, p = e.p;
+  const ab = label(p, side);
+  const logo = side === "away" ? (g && g.awayLogo) : (g && g.homeLogo);
+  const sc = side === "away" ? (g && g.awayScore) : (g && g.homeScore);
+  const id = side === "away" ? (g && g.awayId) : (g && g.homeId);
+  const mine = e.side === side;
+  const ball = g && g.state === "in" && g.possession && id && g.possession === id;
+  return '<div class="tm' + (mine ? " mine" : "") + '">'
+    + (logo ? '<img src="' + logo + '" alt="" loading="lazy">' : '<span style="width:19px"></span>')
+    + '<span class="nm">' + ab + '</span>'
+    + (ball ? '<span class="poss" title="has possession"></span>' : '')
+    + '<span class="sc">' + (sc == null || (g && g.state === "pre") ? "–" : sc) + '</span></div>';
+}
+
+function cushionHTML(e){
+  const {cushion, g, p} = e;
+  if(!g || g.state === "pre")
+    return '<div class="cush"><span class="n">' + sign(p.line) + '</span><span class="l">the line</span></div>';
+  const cls = cushion > 0 ? "cov" : cushion < 0 ? "nocov" : "push";
+  if(g.state === "post"){
+    const v = cushion > 0 ? ["w","WIN"] : cushion < 0 ? ["l","LOSS"] : ["p","PUSH"];
+    return '<div class="cush ' + cls + '"><span class="n">' + sign(cushion) + '</span>'
+      + '<span class="l"><span class="verdict ' + v[0] + '">' + v[1] + '</span></span></div>';
+  }
+  const lbl = cushion > 0 ? "covering" : cushion < 0 ? "need " + Math.ceil(Math.abs(cushion)) : "on the number";
+  return '<div class="cush ' + cls + '"><span class="n">' + sign(cushion) + '</span><span class="l">' + lbl + '</span></div>';
+}
+
+function rowHTML(e){
+  const {p, g, cushion} = e;
+  let cls = "row";
+  if(g && g.state !== "pre") cls += cushion > 0 ? " cov" : cushion < 0 ? " nocov" : " push";
+  if(g && g.state === "post") cls += " done";
+
+  let sit = "";
+  if(g && g.state === "in" && (g.downDistance || g.redZone))
+    sit = '<div class="sit">' + (g.redZone ? '<span class="rz">RED ZONE</span> · ' : '') + (g.downDistance || "") + '</div>';
+
+  return '<article class="' + cls + '">'
+    + '<div class="status">' + statusHTML(g) + '</div>'
+    + '<div class="teams">' + teamHTML(e,"away") + teamHTML(e,"home") + sit
+      + (g ? "" : '<div class="nomatch">' + p.away + ' @ ' + p.home + ' not in feed</div>') + '</div>'
+    + '<div class="pick">'
+      + (p.best ? '<span class="bplabel">Best pick</span>' : '')
+      + '<span class="chip' + (p.best ? " best" : "") + '">'
+        + (p.best ? '<span class="star">★</span>' : '')
+        + '<span class="t">' + label(p, e.side) + '</span>'
+        + '<span class="ln">' + sign(p.line) + '</span></span>'
+    + '</div>'
+    + cushionHTML(e) + '</article>';
+}
+
+function tile(k,v,s,hero){
+  return '<div class="tile' + (hero ? " hero" : "") + '"><span class="k">' + k + '</span>'
+    + '<span class="v">' + v + '</span><span class="s">' + s + '</span></div>';
+}
+
+function tilesHTML(all){
+  const done = all.filter(e => e.g && e.g.state === "post" && e.cushion != null);
+  const live = all.filter(e => e.g && e.g.state === "in" && e.cushion != null);
+  const pre  = all.length - done.length - live.length;
+  const wins = done.filter(e => e.cushion > 0);
+  const loss = done.filter(e => e.cushion < 0).length;
+  const push = done.filter(e => e.cushion === 0).length;
+  const pts  = wins.length + 2 * wins.filter(e => e.p.best).length;
+  const liveCov = live.filter(e => e.cushion > 0);
+  const proj = pts + liveCov.length + 2 * liveCov.filter(e => e.p.best).length;
+
+  const bests    = all.filter(e => e.p.best);
+  const bestWon  = bests.filter(e => e.g && e.g.state === "post" && e.cushion > 0).length;
+  const bestLost = bests.filter(e => e.g && e.g.state === "post" && e.cushion < 0).length;
+  const bestOpen = bests.length - bestWon - bestLost;
+
+  return [
+    tile("Points", String(pts), proj > pts ? "→ " + proj + " if the live ones hold" : "1 per win · +2 per best pick", true),
+    tile("Record", wins.length + "-" + loss + (push ? "-" + push : ""), pre + live.length + " still out"),
+    tile("Best picks", bestWon + '<small>/' + bests.length + '</small>',
+         bestOpen ? bestOpen + " still open · worth 3 each" : "+" + (2 * bestWon) + " bonus points"),
+    tile("Covering now", liveCov.length + '<small>/' + live.length + '</small>', live.length ? "games in progress" : "nothing on the field")
+  ].join("");
+}
+
+function render(){
+  const all = PICKS.map(evaluate);
+  $("#tiles").innerHTML = tilesHTML(all);
+  $("#weeklabel").textContent = WEEK.label;
+
+  const live = all.filter(e => e.g && e.g.state === "in");
+  const pre  = all.filter(e => !e.g || e.g.state === "pre");
+  const post = all.filter(e => e.g && e.g.state === "post");
+
+  live.sort((a,b) => Math.abs(a.cushion ?? 99) - Math.abs(b.cushion ?? 99));
+  pre.sort((a,b) => new Date(a.g ? a.g.start : 0) - new Date(b.g ? b.g.start : 0));
+  post.sort((a,b) => new Date(b.g.start) - new Date(a.g.start));
+
+  let list = [];
+  if(filter === "all")  list = [...live, ...pre, ...post];
+  if(filter === "live") list = live;
+  if(filter === "soon") list = pre;
+  if(filter === "done") list = post;
+
+  $("#rows").innerHTML = list.length ? list.map(rowHTML).join("") : '<div class="empty">Nothing here yet.</div>';
+  $("#slatenote").textContent = live.length + " live · " + pre.length + " upcoming · " + post.length + " final";
+  stamp();
+}
+
+function stamp(){
+  const dot = $("#dot"), out = $("#updated");
+  if(lastErr){ dot.className = "dot err"; out.textContent = "feed error — retrying"; return; }
+  if(!lastOk){ out.textContent = "loading…"; return; }
+  const secs = Math.round((Date.now() - lastOk) / 1000);
+  dot.className = "dot beat" + (secs > 90 ? " stale" : "");
+  out.textContent = secs < 5 ? "just now" : secs < 60 ? secs + "s ago" : Math.floor(secs / 60) + "m ago";
+}
+
+/* ---- controls ---- */
+$("#filter").addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-f]"); if(!b) return;
+  filter = b.dataset.f;
+  [...ev.currentTarget.querySelectorAll("button")].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  render();
+});
+$("#refresh").addEventListener("click", pull);
+$("#theme").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const dark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  try{ localStorage.setItem("pickem-theme", dark ? "light" : "dark"); }catch(e){}
+});
+try{
+  const saved = localStorage.getItem("pickem-theme");
+  if(saved) document.documentElement.setAttribute("data-theme", saved);
+}catch(e){}
+
+/* ---- boot + polling ---- */
+render();
+pull();
+setInterval(() => { if(!document.hidden) pull(); }, 30000);
+setInterval(stamp, 1000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) pull(); });
+</script>
+</body>
+</html>
