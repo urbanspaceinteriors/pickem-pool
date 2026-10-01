@@ -301,52 +301,53 @@ footer b{color:var(--dim)}
 
 <script>
 /* ============================================================
-   WEEK DATA — NFL Week 3 / CFB Week 4, entry "John-Curry" #1
-   Picks entered on Splash 2026-09-24. `away`/`home` are ESPN
+   WEEK DATA — NFL Week 4 / CFB Week 5, entry "John-Curry" #1
+   Picks entered on Splash 2026-10-01. `away`/`home` are ESPN
    abbreviations so rows bind to the live feed exactly; `sa`/`sh`
    carry Splash's label for that side where the two disagree.
    `line` is signed from the perspective of the picked team.
    ============================================================ */
 const WEEK = {
-  label: "NFL Week 3 · CFB Week 4",
+  label: "NFL Week 4 · CFB Week 5",
   year: 2026,
   seasontype: 2,   // 2 = regular season
-  nflWeek: 3,
-  cfbWeek: 4
+  nflWeek: 4,
+  cfbWeek: 5
 };
 
 const PICKS = [
-  {lg:"nfl", away:"ATL",   home:"GB",    pick:"ATL",   line:+6.5},
-  {lg:"cfb", away:"CLEM",  home:"CAL",   pick:"CAL",   line:+1.5},
-  {lg:"cfb", away:"WAKE",  home:"LOU",   pick:"WAKE",  line:+12.5},
-  {lg:"cfb", away:"TEX",   home:"TENN",  pick:"TENN",  line:+5.5},
-  {lg:"cfb", away:"COLO",  home:"BAY",   pick:"BAY",   line:-9.5},
-  {lg:"cfb", away:"MISS",  home:"FLA",   pick:"MISS",  line:+3.5},
-  {lg:"cfb", away:"IOWA",  home:"MICH",  pick:"IOWA",  line:+5.5, best:true},
-  {lg:"cfb", away:"OU",    home:"UGA",   pick:"OU",    line:+14.5, best:true, sa:"OKLA"},
-  {lg:"cfb", away:"WIS",   home:"PSU",   pick:"PSU",   line:-9.5},
-  {lg:"cfb", away:"OKST",  home:"WVU",   pick:"WVU",   line:-1.5},
-  {lg:"cfb", away:"SC",    home:"ALA",   pick:"SC",    line:+12.5, sa:"SCAR"},
-  {lg:"cfb", away:"ORE",   home:"USC",   pick:"ORE",   line:-2.5},
-  {lg:"cfb", away:"TA&M",  home:"LSU",   pick:"TA&M",  line:+8.5, sa:"TXAM"},
-  {lg:"cfb", away:"MIZ",   home:"MSST",  pick:"MIZ",   line:+5.5, sa:"MIZZ"},
-  {lg:"cfb", away:"GT",    home:"STAN",  pick:"STAN",  line:+3.5},
-  {lg:"cfb", away:"MINN",  home:"WASH",  pick:"WASH",  line:-9.5},
-  {lg:"nfl", away:"SEA",   home:"WSH",   pick:"SEA",   line:-6.5, sh:"WAS"},
-  {lg:"nfl", away:"LAC",   home:"BUF",   pick:"BUF",   line:-7.5},
-  {lg:"nfl", away:"CIN",   home:"PIT",   pick:"PIT",   line:+3.5},
-  {lg:"nfl", away:"NYJ",   home:"DET",   pick:"DET",   line:-6.5},
-  {lg:"nfl", away:"CAR",   home:"CLE",   pick:"CLE",   line:+2.5},
-  {lg:"nfl", away:"TEN",   home:"NYG",   pick:"TEN",   line:+3.5},
-  {lg:"nfl", away:"HOU",   home:"IND",   pick:"IND",   line:+2.5},
-  {lg:"nfl", away:"NE",    home:"JAX",   pick:"NE",    line:+2.5, sh:"JAC"},
-  {lg:"nfl", away:"KC",    home:"MIA",   pick:"MIA",   line:+10.5},
-  {lg:"nfl", away:"ARI",   home:"SF",    pick:"ARI",   line:+8.5},
-  {lg:"nfl", away:"MIN",   home:"TB",    pick:"MIN",   line:-1.5},
-  {lg:"nfl", away:"LV",    home:"NO",    pick:"LV",    line:+3.5},
-  {lg:"nfl", away:"BAL",   home:"DAL",   pick:"BAL",   line:-2.5},
-  {lg:"nfl", away:"LAR",   home:"DEN",   pick:"DEN",   line:+2.5, sa:"LA"},
-  {lg:"nfl", away:"PHI",   home:"CHI",   pick:"PHI",   line:-3.5, best:true}
+  {lg:"nfl", away:"PIT",   home:"CLE",   pick:"CLE",   line:+2.5},
+  {lg:"cfb", away:"UNT",   home:"TLSA",  pick:"UNT",   line:+1.5},
+  {lg:"cfb", away:"PSU",   home:"NU",    pick:"PSU",   line:-2.5, sh:"NW"},
+  {lg:"cfb", away:"ND",    home:"UNC",   pick:"UNC",   line:+21.5},
+  {lg:"cfb", away:"BC",    home:"SMU",   pick:"BC",    line:+20.5},
+  {lg:"cfb", away:"ALA",   home:"MSST",  pick:"MSST",  line:+5.5},
+  {lg:"cfb", away:"FLA",   home:"MIZ",   pick:"MIZ",   line:+5.5, best:true, sh:"MIZZ"},
+  {lg:"cfb", away:"AUB",   home:"TENN",  pick:"AUB",   line:+7.5},
+  {lg:"cfb", away:"LOU",   home:"NCSU",  pick:"NCSU",  line:+4.5, sh:"NCST"},
+  {lg:"cfb", away:"OSU",   home:"IOWA",  pick:"OSU",   line:-13.5},
+  {lg:"cfb", away:"UK",    home:"SC",    pick:"UK",    line:+2.5, sh:"SCAR"},
+  {lg:"cfb", away:"ARK",   home:"TA&M",  pick:"TA&M",  line:-14.5, sh:"TXAM"},
+  {lg:"cfb", away:"MIA",   home:"CLEM",  pick:"CLEM",  line:+16.5},
+  {lg:"cfb", away:"WASH",  home:"USC",   pick:"WASH",  line:+9.5},
+  {lg:"cfb", away:"TTU",   home:"COLO",  pick:"COLO",  line:+13.5},
+  {lg:"cfb", away:"BAY",   home:"ASU",   pick:"ASU",   line:-3.5},
+  {lg:"cfb", away:"CIN",   home:"ARIZ",  pick:"CIN",   line:+7.5},
+  {lg:"nfl", away:"IND",   home:"WSH",   pick:"WSH",   line:+3.5, sh:"WAS"},
+  {lg:"nfl", away:"ARI",   home:"NYG",   pick:"ARI",   line:+1.5, best:true},
+  {lg:"nfl", away:"TEN",   home:"BAL",   pick:"TEN",   line:+11.5},
+  {lg:"nfl", away:"LAR",   home:"PHI",   pick:"LAR",   line:-2.5, sa:"LA"},
+  {lg:"nfl", away:"JAX",   home:"CIN",   pick:"JAX",   line:+2.5, sa:"JAC"},
+  {lg:"nfl", away:"NYJ",   home:"CHI",   pick:"CHI",   line:-3.5},
+  {lg:"nfl", away:"GB",    home:"TB",    pick:"GB",    line:-3.5},
+  {lg:"nfl", away:"NE",    home:"BUF",   pick:"BUF",   line:-6.5},
+  {lg:"nfl", away:"DAL",   home:"HOU",   pick:"DAL",   line:+2.5},
+  {lg:"nfl", away:"MIA",   home:"MIN",   pick:"MIA",   line:+11.5},
+  {lg:"nfl", away:"DEN",   home:"SF",    pick:"SF",    line:-2.5},
+  {lg:"nfl", away:"KC",    home:"LV",    pick:"LV",    line:+4.5, best:true},
+  {lg:"nfl", away:"LAC",   home:"SEA",   pick:"LAC",   line:+7.5},
+  {lg:"nfl", away:"DET",   home:"CAR",   pick:"DET",   line:-3.5},
+  {lg:"nfl", away:"ATL",   home:"NO",    pick:"NO",    line:-2.5}
 ];
 
 /* ============================================================ */
